@@ -284,6 +284,7 @@ int main(){
 			printf("[-]Error in connection with MIRROR SERVER\n");
 			exit(1);
 		}
+		printf("[+]Connected to MIRROR SERVER.\n");
 	}
 	else
 	{
