@@ -9,10 +9,14 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#define PORT 4444
+#define PRIMARY_SERVER_PORT 4444
+#define MIRROR_SERVER_PORT 8888
 #define MAX_COMMAND_LENGTH 1024
 #define MAX_ARGS 64
 #define BUFFER_SIZE 1024
+
+char *PRIMARY_SERVER_IP = "127.0.0.1";
+char *MIRROR_SERVER_IP = "127.0.0.1";
 
 char *commands[MAX_ARGS];
 int num_args = 0;
@@ -228,7 +232,8 @@ int validate(){
 int main(){
 
 	int clientSocket, ret;
-	struct sockaddr_in serverAddr;
+	struct sockaddr_in primaryServerAddr;
+	struct sockaddr_in mirrorServerAddr;
 	char buffer[MAX_COMMAND_LENGTH];
 	char str[MAX_COMMAND_LENGTH];
 	char read_buffer[BUFFER_SIZE];
@@ -240,17 +245,51 @@ int main(){
 	}
 	printf("[+]Client Socket is created.\n");
 
-	memset(&serverAddr, '\0', sizeof(serverAddr));
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	ret = connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+		// Try connecting to Primary Server
+	memset(&primaryServerAddr, '\0', sizeof(primaryServerAddr));
+	primaryServerAddr.sin_family = AF_INET;
+	primaryServerAddr.sin_port = htons(PRIMARY_SERVER_PORT);
+	primaryServerAddr.sin_addr.s_addr = inet_addr(PRIMARY_SERVER_IP);
+
+	ret = connect(clientSocket, (struct sockaddr*)&primaryServerAddr, sizeof(primaryServerAddr));
 	if(ret < 0){
-		printf("[-]Error in connection.\n");
+		printf("[-]Error in connection with PRIMARY SERVER\n");
 		exit(1);
 	}
-	printf("[+]Connected to Server.\n");
+
+	// Check if Primary Server has responded to connect with MIRROR SERVER or PRIMARY SERVER
+	write(clientSocket, "c", 1);
+	int n = read(clientSocket, read_buffer, 1);
+    read_buffer[n] = '\0';
+	// check if the server responded with P or M in first char of read_buffer
+	if(strcmp(read_buffer,"P") == 0){
+		printf("[+]Connected to PRIMARY SERVER.\n");
+	}
+	else if (strcmp(read_buffer,"M")==0)
+	{
+		close(clientSocket);
+		clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+		if(clientSocket < 0){
+			printf("[-]Error in connection.\n");
+			exit(1);
+		}
+		printf("[+]Client Socket is created.\n");
+		memset(&mirrorServerAddr, '\0', sizeof(mirrorServerAddr));
+		mirrorServerAddr.sin_family = AF_INET;
+		mirrorServerAddr.sin_port = htons(MIRROR_SERVER_PORT);
+		mirrorServerAddr.sin_addr.s_addr = inet_addr(MIRROR_SERVER_IP);
+		ret = connect(clientSocket, (struct sockaddr*)&mirrorServerAddr, sizeof(mirrorServerAddr));
+		if(ret < 0){
+			printf("[-]Error in connection with MIRROR SERVER\n");
+			exit(1);
+		}
+	}
+	else
+	{
+		printf("[-]PRIMARY SERVER malfunction: Responded with unknown command\n");
+		exit(1);
+	}
 
 	while(1){
 		printf("C$ ");
