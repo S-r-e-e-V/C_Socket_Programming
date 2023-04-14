@@ -137,7 +137,6 @@ int main(){
 			printf("[-]Error in connection.\n");
 			exit(1);
 		}
-		printf("[+]Client Socket is created.\n");
 		memset(&mirrorServerAddr, '\0', sizeof(mirrorServerAddr));
 		mirrorServerAddr.sin_family = AF_INET;
 		mirrorServerAddr.sin_port = htons(MIRROR_SERVER_PORT);
