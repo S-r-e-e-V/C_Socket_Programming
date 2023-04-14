@@ -125,9 +125,9 @@ void getFiles(int newSocket, char* file){
 	char files[100];
 
 	if(strcmp(file,"sfiles")==0){
-		sprintf(command, "find %s -type f -name '*.*' -size +%dc -size -%dc -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),atoi(commands[1]),atoi(commands[2]),file,newSocket);
+		sprintf(command, "find %s -type f -name '*.*' -not -path '%s/Library/*' -size +%dc -size -%dc -print0 | tar -czf %s_%d.tar.gz --null -T -", getenv("HOME"),getenv("HOME"),atoi(commands[1]),atoi(commands[2]),file,newSocket);
 	}else if(strcmp(file,"dfiles")==0){
-		sprintf(command, "find %s -type f -name '*.*' -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),commands[1],commands[2],file,newSocket);
+		sprintf(command, "find %s -type f -name '*.*' -not -path '%s/Library/*' -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czf %s_%d.tar.gz --null -T -", getenv("HOME"),commands[1],commands[2],file,newSocket);
 	}else if(strcmp(file,"getfiles")==0){
 		sprintf(command, "find %s -type f '('", getenv("HOME"));
 		if(strcmp(commands[num_args-1],"-u")==0){
@@ -153,7 +153,7 @@ void getFiles(int newSocket, char* file){
 				strcat(command, files);
 			}
 		}
-		sprintf(files, " ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", file,newSocket);
+		sprintf(files, " ')' -print0 | tar -czf %s_%d.tar.gz --null -T -", file,newSocket);
 		strcat(command, files);
 	}
 	else if (strcmp(file, "gettargz") == 0)
@@ -182,9 +182,10 @@ void getFiles(int newSocket, char* file){
 				strcat(command, files);
 			}
 		}
-		sprintf(files, " ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", file,newSocket);
+		sprintf(files, " ')' -print0 | tar -czf %s_%d.tar.gz --null -T -", file,newSocket);
 		strcat(command, files);
 	}
+	printf("%s", command);
 	// Execute find command
 	int status = system(command);
     if (status != 0) {
@@ -224,6 +225,7 @@ void getFiles(int newSocket, char* file){
         }
     }
 	
+	// remove tar after sending it to client
 	remove(filename);
 
     // Close file and socket

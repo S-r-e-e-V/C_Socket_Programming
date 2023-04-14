@@ -82,7 +82,7 @@ void getTarFile(int clientSocket,char *fileName){
 		if (strcmp(commands[num_args-1], "-u") == 0)
 		{
 			char str[200];
-			sprintf(str, "tar -xzvf %s",fileName);
+			sprintf(str, "tar -xzf %s",fileName);
 			system(str);
 		}
 	}
