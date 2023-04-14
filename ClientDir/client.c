@@ -28,21 +28,47 @@ void split_string(char *str) {
 
 void getTarFile(int clientSocket,char *fileName){
 	char read_buffer[BUFFER_SIZE];
-	char buffer_size[BUFFER_SIZE];
+	off_t file_size;
+	off_t total_bytes_read=0;
+	off_t buffer_size;
 	int fd = open(fileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd == -1) {
 		printf("Error opening file...\n");
-	}else{
-		recv(clientSocket, buffer_size, BUFFER_SIZE, 0);
+		close(fd);
+	}
+	else
+	{
+		recv(clientSocket, &buffer_size, sizeof(buffer_size), 0);
+
 		// Read data from socket and write to file
-		ssize_t bytes_read;
-		while ((bytes_read = recv(clientSocket, read_buffer, buffer_size, 0)) > 0) {
+		
+		// ssize_t bytes_read;
+		// while ((bytes_read = recv(clientSocket, read_buffer, 308428800, 0)) > 0) {
+		// 	ssize_t bytes_written = write(fd, read_buffer, bytes_read);
+		// 	if (bytes_written < bytes_read) {
+		// 		printf("Error writing data to file...\n");
+		// 		break;
+		// 	}
+		// }
+		while (total_bytes_read<buffer_size)
+		{
+			ssize_t bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0);
+			if(bytes_read==-1){
+				perror("Error in receiving data");
+				break;
+			}
 			ssize_t bytes_written = write(fd, read_buffer, bytes_read);
+			if(bytes_written==-1){
+				perror("Error in writing data");
+				break;
+			}
 			if (bytes_written < bytes_read) {
 				printf("Error writing data to file...\n");
 				break;
 			}
+			total_bytes_read =total_bytes_read+ bytes_read;
 		}
+		close(fd);
 
 		if (strcmp(commands[num_args-1], "-u") == 0)
 		{
@@ -110,66 +136,10 @@ int main(){
 
 		if(strcmp(commands[0],"sgetfiles")==0){
 			getTarFile(clientSocket, "sfiles.tar.gz");
-			// int fd = open("sfiles.tar.gz", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-			// if (fd == -1) {
-			// 	printf("Error opening file...\n");
-			// }else{
-			// 	// Read data from socket and write to file
-			// 	ssize_t bytes_read;
-			// 	while ((bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0)) > 0) {
-			// 		ssize_t bytes_written = write(fd, read_buffer, bytes_read);
-			// 		if (bytes_written < bytes_read) {
-			// 			printf("Error writing data to file...\n");
-			// 			break;
-			// 		}
-			// 	}
-			// 	if (strcmp(commands[num_args-1], "-u") == 0)
-			// 	{
-			// 		system("tar -xzvf sfiles.tar.gz");
-			// 	}
-			// }
 		}else if(strcmp(commands[0],"dgetfiles")==0){
 			getTarFile(clientSocket, "dfiles.tar.gz");
-			// int fd = open("dfiles.tar.gz", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-			// if (fd == -1) {
-			// 	printf("Error opening file...\n");
-			// }else{
-			// 	// Read data from socket and write to file
-			// 	ssize_t bytes_read;
-			// 	while ((bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0)) > 0) {
-			// 		ssize_t bytes_written = write(fd, read_buffer, bytes_read);
-			// 		if (bytes_written < bytes_read) {
-			// 			printf("Error writing data to file...\n");
-			// 			break;
-			// 		}
-			// 	}
-
-			// 	if (strcmp(commands[num_args-1], "-u") == 0)
-			// 	{
-			// 		system("tar -xzvf dfiles.tar.gz");
-			// 	}
-			// }
 		}else if(strcmp(commands[0],"getfiles")==0){
 			getTarFile(clientSocket, "listOfFiles.tar.gz");
-			// int fd = open("listOfFiles.tar.gz", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-			// if (fd == -1) {
-			// 	printf("Error opening file...\n");
-			// }else{
-			// 	// Read data from socket and write to file
-			// 	ssize_t bytes_read;
-			// 	while ((bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0)) > 0) {
-			// 		ssize_t bytes_written = write(fd, read_buffer, bytes_read);
-			// 		if (bytes_written < bytes_read) {
-			// 			printf("Error writing data to file...\n");
-			// 			break;
-			// 		}
-			// 	}
-
-			// 	if (strcmp(commands[num_args-1], "-u") == 0)
-			// 	{
-			// 		system("tar -xzvf listOfFiles.tar.gz");
-			// 	}
-			// }
 		}else if(strcmp(commands[0],"gettargz")==0){
 			getTarFile(clientSocket, "gettargz.tar.gz");
 		}else{

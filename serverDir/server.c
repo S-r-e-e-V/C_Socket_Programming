@@ -122,15 +122,68 @@ void getFiles(int newSocket, char* file, char* fileNames){
 	char command[MAX_COMMAND_LENGTH];
     char output[MAX_COMMAND_LENGTH];
 	char filename[200];
+	char files[100];
+
 	if(strcmp(file,"sfiles")==0){
 		sprintf(command, "find %s -type f -size +%dc -size -%dc -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),atoi(commands[1]),atoi(commands[2]),file,newSocket);
 	}else if(strcmp(file,"dfiles")==0){
 		sprintf(command, "find %s -type f -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),commands[1],commands[2],file,newSocket);
 	}else if(strcmp(file,"getfiles")==0){
-		// sprintf(command, "find %s -type f '(' -name 'check.txt' -o -name 'check1.txt' ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),file,newSocket);
-		sprintf(command, "find %s -type f \\( %s \\) -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),fileNames,file,newSocket);
-	}else if(strcmp(file,"gettargz")==0){
-		sprintf(command, "find %s -type f '('%s')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),fileNames,file,newSocket);
+		sprintf(command, "find %s -type f '('", getenv("HOME"));
+		if(strcmp(commands[num_args-1],"-u")==0){
+			for (int i = 1; i < num_args - 1; i++)
+			{
+				if(i!=num_args-2){
+					sprintf(files, " -name '%s' -o", commands[i]);
+				}
+				else{
+					sprintf(files, " -name '%s'", commands[i]);
+				}
+				strcat(command, files);
+			}
+		}else{
+			for (int i = 1; i < num_args; i++)
+			{
+				if(i!=num_args-1){
+					sprintf(files, " -name '%s' -o", commands[i]);
+				}
+				else{
+					sprintf(files, " -name '%s'", commands[i]);
+				}
+				strcat(command, files);
+			}
+		}
+		sprintf(files, " ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", file,newSocket);
+		strcat(command, files);
+	}
+	else if (strcmp(file, "gettargz") == 0)
+	{
+		sprintf(command, "find %s -type f '('", getenv("HOME"));
+		if(strcmp(commands[num_args-1],"-u")==0){
+			for (int i = 1; i < num_args - 1; i++)
+			{
+				if(i!=num_args-2){
+					sprintf(files, " -name '*.%s' -o", commands[i]);
+				}
+				else{
+					sprintf(files, " -name '*.%s'", commands[i]);
+				}
+				strcat(command, files);
+			}
+		}else{
+			for (int i = 1; i < num_args; i++)
+			{
+				if(i!=num_args-1){
+					sprintf(files, " -name '*.%s' -o", commands[i]);
+				}
+				else{
+					sprintf(files, " -name '*.%s'", commands[i]);
+				}
+				strcat(command, files);
+			}
+		}
+		sprintf(files, " ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", file,newSocket);
+		strcat(command, files);
 	}
 	printf("%s", command);
 	// Execute find command
@@ -150,15 +203,19 @@ void getFiles(int newSocket, char* file, char* fileNames){
         exit(0);
     }
 
+	// send file size
 	struct stat st;
-    if (stat(filename, &st) == 0) {
-		send(newSocket, st.st_size, BUFFER_SIZE, 0);
-    } else {
-		send(newSocket, "Error getting file size", BUFFER_SIZE, 0);
-    }
+    if (stat(filename, &st) >= 0) {
+		off_t buffer_size = st.st_size;
+		send(newSocket, &buffer_size, sizeof(buffer_size), 0);
+	} else {
+		perror("stat");
+		exit(EXIT_FAILURE);
+	}
 
     // Read archive into buffer and send to client over socket
     char buffer[BUFFER_SIZE];
+
     ssize_t bytes_read;
     while ((bytes_read = read(fd, buffer, BUFFER_SIZE)) > 0) {
         ssize_t bytes_sent = send(newSocket, buffer, bytes_read, 0);
@@ -211,41 +268,6 @@ void getFiles(int newSocket, char* file, char* fileNames){
 //     close(fd);
 // }
 
-void getFileNames(int newSocket, int isFileName){
-	char names[500];
-	if(strcmp(commands[num_args-1],"-u")==0){
-		for (int i = 1; i < num_args - 1; i++)
-		{
-			strcat(names, "-name \'");
-			strcat(names, commands[i]);
-			if(isFileName==1){
-				strcat(names, "\'");
-			}else{
-				strcat(names, "\'*.");
-			}
-			if(i != num_args-2)
-				strcat(names, " -o ");
-		}
-	}else{
-		for (int i = 1; i < num_args; i++)
-		{
-			strcat(names, "-name \'");
-			strcat(names, commands[i]);
-			if(isFileName==1){
-				strcat(names, "\'");
-			}else{
-				strcat(names, "\'*.");
-			}
-			if (i != num_args - 1)
-				strcat(names, " -o ");
-		}
-	}
-	if(isFileName==1){
-		getFiles(newSocket, "getfiles", names);
-	}else{
-		getFiles(newSocket, "gettargz",names);
-	}
-}
 
 int main(){
 	int sockfd, ret;
@@ -315,15 +337,16 @@ int main(){
 							message = "No files found";
 							send(newSocket, message, strlen(message), 0);
 						}
-					}else if (strcmp(cmd, "sgetfiles") == 0)
-					{
+					}else if (strcmp(cmd, "sgetfiles") == 0){
 						getFiles(newSocket,"sfiles","");
 					}else if(strcmp(cmd,"dgetfiles")==0){
 						getFiles(newSocket,"dfiles","");
 					}else if(strcmp(cmd,"getfiles")==0){
-						getFileNames(newSocket,1);
-					}else if(strcmp(cmd,"gettargz")==0){
-						getFileNames(newSocket,0);
+						getFiles(newSocket, "getfiles", "");
+					}
+					else if (strcmp(cmd, "gettargz") == 0)
+					{
+						getFiles(newSocket, "gettargz", "");
 					}
 					bzero(message, sizeof(message));
 				}
