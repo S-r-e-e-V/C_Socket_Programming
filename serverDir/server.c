@@ -118,7 +118,7 @@ int search_file(int newSocket, char *filename, char *path) {
 // 	pclose(fp);
 // }
 
-void getFiles(int newSocket, char* file, char* fileNames){
+void getFiles(int newSocket, char* file){
 	char command[MAX_COMMAND_LENGTH];
     char output[MAX_COMMAND_LENGTH];
 	char filename[200];
@@ -225,48 +225,11 @@ void getFiles(int newSocket, char* file, char* fileNames){
         }
     }
 	
-	// remove("temp.tar.gz");
+	remove("temp.tar.gz");
 
     // Close file and socket
     close(fd);
 }
-
-// unused code
-
-// void dgetfiles(int newSocket){
-// 	char command[MAX_COMMAND_LENGTH];
-//     char output[MAX_COMMAND_LENGTH];
-// 	char filename[200];
-// 	sprintf(command, "find %s -type f -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czvf - --null -T - > dfiles%d.tar.gz", getenv("HOME"),commands[1],commands[2],newSocket);
-//     // Execute find command
-//     int status = system(command);
-//     if (status != 0) {
-//         printf("Error creating archive...\n");
-//         exit(0);
-//     }
-//     else
-//         printf("Archive created successfully...\n");
-// 	sprintf(filename, "dfiles%d.tar.gz", newSocket);
-// 	// Open temp.tar.gz archive for reading
-// 	int fd = open(filename, O_RDONLY);
-//     if (fd == -1) {
-//         printf("Error opening archive...\n");
-//         exit(0);
-//     }
-//     // Read archive into buffer and send to client over socket
-//     char buffer[BUFFER_SIZE];
-//     ssize_t bytes_read;
-//     while ((bytes_read = read(fd, buffer, BUFFER_SIZE)) > 0) {
-//         ssize_t bytes_sent = send(newSocket, buffer, bytes_read, 0);
-//         if (bytes_sent < bytes_read) {
-//             printf("Error sending data...\n");
-//             exit(0);
-//         }
-//     }
-// 	// remove("temp.tar.gz");
-//     // Close file and socket
-//     close(fd);
-// }
 
 
 int main(){
@@ -338,15 +301,15 @@ int main(){
 							send(newSocket, message, strlen(message), 0);
 						}
 					}else if (strcmp(cmd, "sgetfiles") == 0){
-						getFiles(newSocket,"sfiles","");
+						getFiles(newSocket,"sfiles");
 					}else if(strcmp(cmd,"dgetfiles")==0){
-						getFiles(newSocket,"dfiles","");
+						getFiles(newSocket,"dfiles");
 					}else if(strcmp(cmd,"getfiles")==0){
-						getFiles(newSocket, "getfiles", "");
+						getFiles(newSocket, "getfiles");
 					}
 					else if (strcmp(cmd, "gettargz") == 0)
 					{
-						getFiles(newSocket, "gettargz", "");
+						getFiles(newSocket, "gettargz");
 					}
 					bzero(message, sizeof(message));
 				}
