@@ -103,43 +103,71 @@ void getTarFile(int clientSocket,char *fileName){
 	off_t file_size;
 	off_t total_bytes_read=0;
 	off_t buffer_size;
-	int fd = open(fileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-	if (fd == -1) {
-		printf("Error opening file...\n");
-		close(fd);
-	}
-	else
+	char read_buffer_for_Flag[BUFFER_SIZE];
+
+	// Read dataFlag from socket
+	printf("Waiting for dataFlag...\n");
+	recv(clientSocket, &read_buffer_for_Flag, sizeof(read_buffer_for_Flag), 0);
+	char receivedFlag[10];
+	strncpy(receivedFlag, read_buffer_for_Flag, 10);
+	printf("Received the Flag!\n");
+	// wait for 1 second
+	sleep(1);
+	// send acknowledgement to server
+	send(clientSocket, "flagReceived", 12, 0);
+
+	char fileTypeFlag[10] = "SENDFILE=1";
+	char dataFlag[10] = "SENDFILE=0";
+
+	// if dataFlag SENDFILE=0
+	if (strncmp(receivedFlag, dataFlag, 10)==0)
 	{
-		recv(clientSocket, &buffer_size, sizeof(buffer_size), 0);
-
-		// Read data from socket and write to file
-		while (total_bytes_read<buffer_size)
-		{
-			ssize_t bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0);
-			if(bytes_read==-1){
-				perror("Error in receiving data");
-				break;
-			}
-			ssize_t bytes_written = write(fd, read_buffer, bytes_read);
-			if(bytes_written==-1){
-				perror("Error in writing data");
-				break;
-			}
-			if (bytes_written < bytes_read) {
-				printf("Error writing data to file...\n");
-				break;
-			}
-			total_bytes_read =total_bytes_read+ bytes_read;
+		// read data from socket and print
+		recv(clientSocket, &read_buffer, sizeof(read_buffer), 0);
+		printf(">>%s\n",read_buffer);
+		return;
+	}
+	else if (strncmp(receivedFlag, fileTypeFlag, 10)==0)
+	{
+		int fd = open(fileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+		if (fd == -1) {
+			printf("Error opening file...\n");
+			close(fd);
 		}
-		close(fd);
-
-		// isEmptyTar(fileName);
-
-		if (strcmp(commands[num_args-1], "-u") == 0)
+		else
 		{
-			char str[200];
-			sprintf(str, "tar -xzf %s",fileName);
-			system(str);
+			// Read file size from socket
+			recv(clientSocket, &buffer_size, sizeof(buffer_size), 0);
+
+			// Read data from socket and write to file
+			while (total_bytes_read<buffer_size)
+			{
+				ssize_t bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0);
+				if(bytes_read==-1){
+					perror("Error in receiving data");
+					break;
+				}
+				ssize_t bytes_written = write(fd, read_buffer, bytes_read);
+				if(bytes_written==-1){
+					perror("Error in writing data");
+					break;
+				}
+				if (bytes_written < bytes_read) {
+					printf("Error writing data to file...\n");
+					break;
+				}
+				total_bytes_read =total_bytes_read+ bytes_read;
+			}
+			close(fd);
+
+			// isEmptyTar(fileName);
+
+			if (strcmp(commands[num_args-1], "-u") == 0)
+			{
+				char str[200];
+				sprintf(str, "tar -xzf %s",fileName);
+				system(str);
+			}
 		}
 	}
 }
@@ -246,7 +274,7 @@ int main(){
 	printf("[+]Client Socket is created.\n");
 
 
-	// Try connecting to Primary Server
+    // Try connecting to Primary Server
 	memset(&primaryServerAddr, '\0', sizeof(primaryServerAddr));
 	primaryServerAddr.sin_family = AF_INET;
 	primaryServerAddr.sin_port = htons(PRIMARY_SERVER_PORT);
@@ -294,6 +322,9 @@ int main(){
 	while(1){
 		printf("C$ ");
 		scanf(" %[^\n]s",&buffer[0]);
+		// testing : set buffer to quit to exit
+		//strcpy(buffer, "getfiles check.txt");
+
 		strcpy(str, buffer);
 		split_string(str);
 
@@ -328,6 +359,7 @@ int main(){
 				printf("Server: %s\n", read_buffer);
 			}
 		}
+		//printf("\n++++++++++++++++++++++\n");
 	}
 	return 0;
 }
