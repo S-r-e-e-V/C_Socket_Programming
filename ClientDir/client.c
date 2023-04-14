@@ -26,6 +26,22 @@ void split_string(char *str) {
     }
 }
 
+void isEmptyTar(char * fileName){
+	FILE* tarfile = fopen(fileName, "rb");
+    if (tarfile != NULL) {
+        int c = fgetc(tarfile);
+        if (c == EOF) {
+            printf("The tar file is empty.\n");
+        } else {
+            printf("The tar file is not empty.\n");
+        }
+        fclose(tarfile);
+    } else {
+        printf("Failed to open the tar file.\n");
+        perror("fopen");
+    }
+}
+
 void getTarFile(int clientSocket,char *fileName){
 	char read_buffer[BUFFER_SIZE];
 	off_t file_size;
@@ -41,15 +57,6 @@ void getTarFile(int clientSocket,char *fileName){
 		recv(clientSocket, &buffer_size, sizeof(buffer_size), 0);
 
 		// Read data from socket and write to file
-		
-		// ssize_t bytes_read;
-		// while ((bytes_read = recv(clientSocket, read_buffer, 308428800, 0)) > 0) {
-		// 	ssize_t bytes_written = write(fd, read_buffer, bytes_read);
-		// 	if (bytes_written < bytes_read) {
-		// 		printf("Error writing data to file...\n");
-		// 		break;
-		// 	}
-		// }
 		while (total_bytes_read<buffer_size)
 		{
 			ssize_t bytes_read = recv(clientSocket, read_buffer, BUFFER_SIZE, 0);
@@ -69,6 +76,8 @@ void getTarFile(int clientSocket,char *fileName){
 			total_bytes_read =total_bytes_read+ bytes_read;
 		}
 		close(fd);
+
+		// isEmptyTar(fileName);
 
 		if (strcmp(commands[num_args-1], "-u") == 0)
 		{

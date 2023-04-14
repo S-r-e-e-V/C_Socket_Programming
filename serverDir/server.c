@@ -125,9 +125,9 @@ void getFiles(int newSocket, char* file){
 	char files[100];
 
 	if(strcmp(file,"sfiles")==0){
-		sprintf(command, "find %s -type f -size +%dc -size -%dc -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),atoi(commands[1]),atoi(commands[2]),file,newSocket);
+		sprintf(command, "find %s -type f -name '*.*' -size +%dc -size -%dc -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),atoi(commands[1]),atoi(commands[2]),file,newSocket);
 	}else if(strcmp(file,"dfiles")==0){
-		sprintf(command, "find %s -type f -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),commands[1],commands[2],file,newSocket);
+		sprintf(command, "find %s -type f -name '*.*' -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", getenv("HOME"),commands[1],commands[2],file,newSocket);
 	}else if(strcmp(file,"getfiles")==0){
 		sprintf(command, "find %s -type f '('", getenv("HOME"));
 		if(strcmp(commands[num_args-1],"-u")==0){
@@ -185,7 +185,6 @@ void getFiles(int newSocket, char* file){
 		sprintf(files, " ')' -print0 | tar -czvf - --null -T - > %s_%d.tar.gz", file,newSocket);
 		strcat(command, files);
 	}
-	printf("%s", command);
 	// Execute find command
 	int status = system(command);
     if (status != 0) {
@@ -225,7 +224,7 @@ void getFiles(int newSocket, char* file){
         }
     }
 	
-	remove("temp.tar.gz");
+	remove(filename);
 
     // Close file and socket
     close(fd);
@@ -234,6 +233,7 @@ void getFiles(int newSocket, char* file){
 
 int main(){
 	int sockfd, ret;
+	int opt = 1;
 	struct sockaddr_in serverAddr;
 
 	int newSocket;
@@ -255,6 +255,11 @@ int main(){
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
 	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+	if(setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt))){
+		perror("setsockopt failed");
+		exit(1);
+	}
 
 	ret = bind(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	if(ret < 0){
