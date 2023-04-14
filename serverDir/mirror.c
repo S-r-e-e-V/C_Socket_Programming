@@ -11,13 +11,12 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-#define PORT 4444
+#define PORT 8888
 #define MAX_COMMAND_LENGTH 1024
 #define MAX_ARGS 64
 #define BUFFER_SIZE 1024
 
-int noOfPrimaryServerClients = 0, noOfMirrorServerClients = 0, totalClients = 0;
-int nextClientHandler = 1; // 1 for primary server, 0 for mirror server
+int totalClients = 0;
 
 struct commands_struct
 {
@@ -235,27 +234,6 @@ void getFiles(int newSocket, char* file){
     close(fd);
 }
 
-// a function for server selection
-int serverSelection()
-{
-    // Mirror Server = 0
-    // Main Server = 1
-    // if totalClients is multiple of 4 then choose mirror server else choose main server
-
-    if (totalClients % 4 == 0 && totalClients > 3)
-    {
-        if (nextClientHandler == 0)
-		{
-			nextClientHandler = 1;
-		}
-		else
-		{
-			nextClientHandler = 0;
-		}
-    }
-	return nextClientHandler;
-}
-
 int main(){
 	int sockfd, ret;
 	int opt = 1;
@@ -304,26 +282,8 @@ int main(){
 		if(newSocket < 0){
 			exit(1);
 		}
-		printf("%d. Connection accepted from %s:%d", totalClients+1, inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
-		
-		// check condition here which server to join
-		int selectedServer = serverSelection();
-		if (selectedServer)
-		{
-			noOfPrimaryServerClients++;
-			write(newSocket, "P", 1);
-			totalClients++;
-			printf("\n");
-		}
-		else
-		{
-			noOfMirrorServerClients++;
-			write(newSocket, "M", 1);
-			close(newSocket);
-			totalClients++;
-			printf(" - Redirected to Mirror Server\n");
-			continue;
-		}
+		printf("%d. Connection accepted from %s:%d\n", totalClients+1, inet_ntoa(newAddr.sin_addr), ntohs(newAddr.sin_port));
+        totalClients++;
 
 		pid_t childPid = fork();
 		if(childPid == 0){
