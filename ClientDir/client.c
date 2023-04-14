@@ -42,6 +42,31 @@ void isEmptyTar(char * fileName){
     }
 }
 
+int isValidDate(char* str) {
+    int day, month, year;
+    if (sscanf(str, "%d-%d-%d", &year, &month, &day) != 3) {
+        return 0;
+    }
+    if (day < 1 || month < 1 || month > 12 || year < 0) {
+        return 0;
+    }
+    int maxDays = 31;
+    if (month == 4 || month == 6 || month == 9 || month == 11) {
+        maxDays = 30;
+    } else if (month == 2) {
+        if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) {
+            maxDays = 29;
+        } else {
+            maxDays = 28;
+        }
+    }
+    if (day > maxDays) {
+        return 0;
+    }
+    return 1;
+}
+
+
 void getTarFile(int clientSocket,char *fileName){
 	char read_buffer[BUFFER_SIZE];
 	off_t file_size;
@@ -88,6 +113,53 @@ void getTarFile(int clientSocket,char *fileName){
 	}
 }
 
+// int validate(){
+// 	if(strcmp(commands[0],"findfile")!=0 || 
+// 		strcmp(commands[0],"sgetfiles")!=0||
+// 		strcmp(commands[0],"dgetfiles")!=0 || 
+// 		strcmp(commands[0],"getfiles")!=0 || 
+// 		strcmp(commands[0],"gettargz")!=0){
+// 			printf("Invalid command\n");
+// 			return 0;
+// 	}
+// 	else if (strcmp(commands[0],"findfile")==0){
+// 		if(num_args!=2){
+// 			printf("<usage>: findfile <fileName>\n");
+// 			return 0;
+// 		}
+// 		return 1;
+// 	}else if(strcmp(commands[0],"sgetfiles")==0){
+// 		if(num_args<3 || num_args>4){
+// 			printf("<usage>: sgetfiles <size1> <size2> -u\n");
+// 			return 0;
+// 		}else if(!isdigit(commands[1])||!isdigit(commands[2])){
+// 			printf("<usage>: sgetfiles <size1> <size2> -u\n");
+// 			printf("Size should be integer\n");
+// 			return 0;
+// 		}else if(atoi(commands[1])>atoi(commands[2])){
+// 			printf("<usage>: sgetfiles <size1> <size2> -u\n");
+// 			printf("Size1 should be less than size2\n");
+// 			return 0;
+// 		}
+// 		return 1;
+// 	}else if(strcmp(commands[0],"dgetfiles")==0){
+// 		if(num_args<3 || num_args>4){
+// 			printf("<usage>: dgetfiles <date1> <date2> -u\n");
+// 			return 0;
+// 		}else if(isValidDate(commands[1])==0||isValidDate(commands[2])==0){
+// 			printf("<usage>: dgetfiles <date1> <date2> -u\n");
+// 			printf("Enter valid date\n");
+// 			return 0;
+// 		}else if(atoi(commands[1])>atoi(commands[2])){
+// 			printf("<usage>: dgetfiles <date1> <date2> -u\n");
+// 			printf("Date1 should be less than date2\n");
+// 			return 0;
+// 		}
+// 		return 1;
+// 	}
+// 	return 1;
+// }
+
 int main(){
 
 	int clientSocket, ret;
@@ -121,21 +193,15 @@ int main(){
 		strcpy(str, buffer);
 		split_string(str);
 
-		// char command[MAX_COMMAND_LENGTH]="";
-        // strcpy(command,buffer[0]);
-        // char *arg = strtok(command, " ");
+		// int isValid = validate();
 
-		// if(!strcmp(command,"findfile") || 
-		// !strcmp(command,"sgetfiles")||
-		// !strcmp(command,"dgetfiles") || 
-		// !strcmp(command,"getfiles") || 
-		// !strcmp(command,"gettargz")){
-		// 	printf("Incorrect command");
+		// if(isValid==1){
+		// 	send(clientSocket, buffer, strlen(buffer), 0);
+		// }else{
+		// 	continue;
 		// }
-		// else
-		// {
 		send(clientSocket, buffer, strlen(buffer), 0);
-		// }
+		
 
 		if(strcmp(buffer, "quit") == 0){
 			close(clientSocket);
