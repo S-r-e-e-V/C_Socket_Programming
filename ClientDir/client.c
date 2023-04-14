@@ -246,7 +246,7 @@ int main(){
 	printf("[+]Client Socket is created.\n");
 
 
-		// Try connecting to Primary Server
+	// Try connecting to Primary Server
 	memset(&primaryServerAddr, '\0', sizeof(primaryServerAddr));
 	primaryServerAddr.sin_family = AF_INET;
 	primaryServerAddr.sin_port = htons(PRIMARY_SERVER_PORT);
