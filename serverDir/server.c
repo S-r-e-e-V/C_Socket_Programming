@@ -130,8 +130,8 @@ void getFiles(int newSocket, char *file)
 {
 	char command[MAX_COMMAND_LENGTH];
 	char output[MAX_COMMAND_LENGTH];
-	char filename[200];
-	char files[100];
+	char filename[500];
+	char files[500];
 	int sendFile = 0;
 
 	if (strcmp(file, "sfiles") == 0)
@@ -184,8 +184,10 @@ void getFiles(int newSocket, char *file)
 		}
 		sprintf(files, " ')' -print0 ");
 		strcat(command, files);
-		// complete files with tar
-		sprintf(command, "%s | if grep -q . ; then %s | tar -czf %s_%d.tar.gz --null -T - ; fi", command, command, file, newSocket);
+		sprintf(files, " | if grep -q . ; then %s |", command);
+		strcat(command, files);
+		sprintf(files, " tar -czf %s_%d.tar.gz --null -T - ; fi", file, newSocket);
+		strcat(command, files);
 	}
 	else if (strcmp(file, "gettargz") == 0)
 	{
@@ -222,8 +224,10 @@ void getFiles(int newSocket, char *file)
 		}
 		sprintf(files, " ')' -print0 ");
 		strcat(command, files);
-		// complete files with tar
-		sprintf(command, "%s | if grep -q . ; then %s | tar -czf %s_%d.tar.gz --null -T - ; fi", command, command, file, newSocket);
+		sprintf(files, " | if grep -q . ; then %s |", command);
+		strcat(command, files);
+		sprintf(files, "tar -czf %s_%d.tar.gz --null -T - ; fi", file, newSocket);
+		strcat(command, files);
 	}
 	printf("%s", command);
 	// Execute find command
