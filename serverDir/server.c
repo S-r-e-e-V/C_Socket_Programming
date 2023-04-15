@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -85,11 +86,11 @@ int search_file(int newSocket, char *filename, char *path)
 			}
 
 			printf("Found file %s\n", path);
-			printf("Size: %ld bytes\n", st.st_size);
+			printf("Size: %jd bytes", (intmax_t)st.st_size);
 			printf("Date created: %s", ctime(&st.st_ctime));
 
 			char *message = malloc(MAX_COMMAND_LENGTH * sizeof(char));
-			sprintf(message, "File: %s\nSize: %ld bytes\nDate created: %s", path, st.st_size, ctime(&st.st_ctime));
+			sprintf(message, "File: %s\nSize: %jd bytes\nDate created: %s", path, (intmax_t)st.st_size, ctime(&st.st_ctime));
 
 			send(newSocket, message, strlen(message), 0);
 
@@ -497,7 +498,7 @@ int main()
 					{
 						getFiles(newSocket, "gettargz");
 					}
-					bzero(message, sizeof(message));
+					memset(message, 0, sizeof(char) * sizeof(message));
 				}
 			}
 		}
