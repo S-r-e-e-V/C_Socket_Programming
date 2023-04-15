@@ -129,6 +129,10 @@ int validate(){
 				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n");
 				printf("Size1 should be less than size2\n\n");
 				return 0;
+			}else if (num_args==4 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n\n");
+				return 0;
 			}
 			return 1;
 		}
@@ -149,6 +153,10 @@ int validate(){
 				printf("\n<usage>: dgetfiles <date1> <date2> <-u>\n");
 				printf("Enter valid date with date1 should be older than date2\n\n");
 				return 0;
+			}else if (num_args==4 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n\n");
+				return 0;
 			}
 			return 1;
 		}
@@ -158,12 +166,20 @@ int validate(){
 			{
 				printf("\n<usage>: getfiles <file1> <file2> <file3> <file4> <file5> <file6> <-u>\n\n");
 				return 0;
+			}else if (num_args==8 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: getfiles <file1> <file2> <file3> <file4> <file5> <file6> <-u>\n\n");
+				return 0;
 			}
 			return 1;
 		}
 		else if (strcmp(commands[0], "gettargz") == 0)
 		{
 			if (num_args < 2 || num_args > 8)
+			{
+				printf("\n<usage>: gettargz <extension1> <extension2> <extension3> <extension4> <extension5> <extension6> <-u>\n\n");
+				return 0;
+			}else if (num_args==8 && strcmp(commands[num_args-1], "-u")!=0)
 			{
 				printf("\n<usage>: gettargz <extension1> <extension2> <extension3> <extension4> <extension5> <extension6> <-u>\n\n");
 				return 0;
@@ -247,6 +263,7 @@ void getTarFile(int clientSocket,char *fileName){
 				char str[200];
 				sprintf(str, "tar -xzf %s",fileName);
 				system(str);
+				remove(fileName);
 			}
 		}
 	}
