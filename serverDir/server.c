@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -138,7 +137,7 @@ void getFiles(int newSocket, char *file)
 	{
 		// find Command
 		char *findCommand = malloc(MAX_COMMAND_LENGTH * sizeof(char));
-		sprintf(findCommand, "find %s -type f -name '*.*' -not -path '%s/*' -size +%dc -size -%dc -print0 ", home, home, atoi(commands[1]), atoi(commands[2]));
+		sprintf(findCommand, "find %s -type f -name '*.*' -not -path '%s/Library/*' -size +%dc -size -%dc -print0 ", home, home, atoi(commands[1]), atoi(commands[2]));
 		// complete command with tar
 		sprintf(command, "%s | if grep -q . ; then %s | tar -czf %s_%d.tar.gz --null -T -  ; fi", findCommand, findCommand, file, newSocket);
 	}
@@ -146,7 +145,7 @@ void getFiles(int newSocket, char *file)
 	{
 		// find Command
 		char *findCommand = malloc(MAX_COMMAND_LENGTH * sizeof(char));
-		sprintf(findCommand, "find %s -type f -name '*.*' -not -path '%s/*' -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0", home, home, commands[1], commands[2]);
+		sprintf(findCommand, "find %s -type f -name '*.*' -not -path '%s/Library/*' -newermt '%s 00:00:00' ! -newermt '%s 23:59:59' -print0", home, home, commands[1], commands[2]);
 		sprintf(command, "%s | if grep -q . ; then %s | tar -czf %s_%d.tar.gz --null -T - ; fi", findCommand, findCommand, file, newSocket);
 	}
 	else if (strcmp(file, "getfiles") == 0)
