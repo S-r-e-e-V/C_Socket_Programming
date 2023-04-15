@@ -357,13 +357,13 @@ int main(){
 		}
 
 		if(strcmp(commands[0],"sgetfiles")==0){
-			getTarFile(clientSocket, "sfiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"dgetfiles")==0){
-			getTarFile(clientSocket, "dfiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"getfiles")==0){
-			getTarFile(clientSocket, "listOfFiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"gettargz")==0){
-			getTarFile(clientSocket, "gettargz.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else{
 			if(recv(clientSocket, read_buffer, BUFFER_SIZE, 0) < 0){
 				printf("[-]Error in receiving data.\n");
