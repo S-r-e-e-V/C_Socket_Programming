@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <ctype.h>
 
 #define PRIMARY_SERVER_PORT 4444
 #define MIRROR_SERVER_PORT 8888
@@ -45,7 +46,154 @@ void isEmptyTar(char * fileName){
         perror("fopen");
     }
 }
+int is_digit_string(char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (!isdigit(str[i])) {
+            return 0; // not a digit string
+        }
+    }
+    return 1; // digit string
+}
 
+int isValidDate(char* str) {
+    int day, month, year;
+    if (sscanf(str, "%d-%d-%d", &year, &month, &day) != 3) {
+        return 0;
+    }
+    if (day < 1 || month < 1 || month > 12 || year < 0) {
+        return 0;
+    }
+    int maxDays = 31;
+    if (month == 4 || month == 6 || month == 9 || month == 11) {
+        maxDays = 30;
+    } else if (month == 2) {
+        if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) {
+            maxDays = 29;
+        } else {
+            maxDays = 28;
+        }
+    }
+    if (day > maxDays) {
+        return 0;
+    }
+    return 1;
+}
+
+int is_date2_greater(char* date1, char* date2) {
+    int day1, month1, year1, day2, month2, year2;
+    sscanf(date1, "%d-%d-%d", &year1, &month1, &day1);
+    sscanf(date2, "%d-%d-%d", &year2, &month2, &day2);
+
+    if (year1 > year2) {
+        return 0; // date1 is greater
+    } else if (year1 == year2 && month1 > month2) {
+        return 0; // date1 is greater
+    } else if (year1 == year2 && month1 == month2 && day1 > day2) {
+        return 0; // date1 is greater
+    } else {
+        return 1; // date2 is greater
+    }
+}
+int validate(){
+	if (strcmp(commands[0], "findfile") == 0 ||
+		strcmp(commands[0], "sgetfiles") == 0 ||
+		strcmp(commands[0], "dgetfiles") == 0 ||
+		strcmp(commands[0], "getfiles") == 0 ||
+		strcmp(commands[0], "gettargz") == 0 ||
+		strcmp(commands[0], "quit") == 0)
+	{
+		if (strcmp(commands[0], "findfile") == 0)
+		{
+			if (num_args != 2)
+			{
+				printf("\n<usage>: findfile <filename>\n\n");
+				return 0;
+			}
+			return 1;
+		}
+		else if (strcmp(commands[0], "sgetfiles") == 0)
+		{
+			if (num_args < 3 || num_args > 4)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n\n");
+				return 0;
+			}
+			else if (is_digit_string(commands[1]) == 0 || is_digit_string(commands[2]) == 0)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n");
+				printf("Size should be integer\n\n");
+				return 0;
+			}
+			else if (atoi(commands[1]) >= atoi(commands[2]))
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n");
+				printf("Size1 should be less than size2\n\n");
+				return 0;
+			}else if (num_args==4 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n\n");
+				return 0;
+			}
+			return 1;
+		}
+		else if (strcmp(commands[0], "dgetfiles") == 0)
+		{
+			if (num_args < 3 || num_args > 4)
+			{
+				printf("\n<usage>: dgetfiles <date1> <date2> <-u>\n\n");
+				return 0;
+			}
+			else if (isValidDate(commands[1]) == 0 || isValidDate(commands[2]) == 0)
+			{
+				printf("\n<usage>: dgetfiles <date1> <date2> <-u>\n");
+				printf("Enter valid date\n\n");
+				return 0;
+			}
+			else if(is_date2_greater(commands[1],commands[2])==0){
+				printf("\n<usage>: dgetfiles <date1> <date2> <-u>\n");
+				printf("Enter valid date with date1 should be older than date2\n\n");
+				return 0;
+			}else if (num_args==4 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: sgetfiles <size1> <size2> <-u>\n\n");
+				return 0;
+			}
+			return 1;
+		}
+		else if (strcmp(commands[0], "getfiles") == 0)
+		{
+			if (num_args < 2 || num_args > 8)
+			{
+				printf("\n<usage>: getfiles <file1> <file2> <file3> <file4> <file5> <file6> <-u>\n\n");
+				return 0;
+			}else if (num_args==8 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: getfiles <file1> <file2> <file3> <file4> <file5> <file6> <-u>\n\n");
+				return 0;
+			}
+			return 1;
+		}
+		else if (strcmp(commands[0], "gettargz") == 0)
+		{
+			if (num_args < 2 || num_args > 8)
+			{
+				printf("\n<usage>: gettargz <extension1> <extension2> <extension3> <extension4> <extension5> <extension6> <-u>\n\n");
+				return 0;
+			}else if (num_args==8 && strcmp(commands[num_args-1], "-u")!=0)
+			{
+				printf("\n<usage>: gettargz <extension1> <extension2> <extension3> <extension4> <extension5> <extension6> <-u>\n\n");
+				return 0;
+			}
+			return 1;
+		}
+		return 1;
+	}
+	else
+	{
+		printf("Invalid command\n");
+		return 0;
+	}
+}
 void getTarFile(int clientSocket,char *fileName){
 	char read_buffer[BUFFER_SIZE];
 	off_t file_size;
@@ -115,6 +263,7 @@ void getTarFile(int clientSocket,char *fileName){
 				char str[200];
 				sprintf(str, "tar -xzf %s",fileName);
 				system(str);
+				remove(fileName);
 			}
 		}
 	}
@@ -191,21 +340,15 @@ int main(){
 		strcpy(str, buffer);
 		split_string(str);
 
-		// char command[MAX_COMMAND_LENGTH]="";
-        // strcpy(command,buffer[0]);
-        // char *arg = strtok(command, " ");
-
-		// if(!strcmp(command,"findfile") || 
-		// !strcmp(command,"sgetfiles")||
-		// !strcmp(command,"dgetfiles") || 
-		// !strcmp(command,"getfiles") || 
-		// !strcmp(command,"gettargz")){
-		// 	printf("Incorrect command");
-		// }
-		// else
-		// {
-		send(clientSocket, buffer, strlen(buffer), 0);
-		// }
+		// command validation
+		int isValid = validate();
+		if(isValid==1){
+			send(clientSocket, buffer, strlen(buffer), 0);
+		}
+		else
+		{
+			continue;
+		}
 
 		if(strcmp(buffer, "quit") == 0){
 			close(clientSocket);
@@ -214,13 +357,13 @@ int main(){
 		}
 
 		if(strcmp(commands[0],"sgetfiles")==0){
-			getTarFile(clientSocket, "sfiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"dgetfiles")==0){
-			getTarFile(clientSocket, "dfiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"getfiles")==0){
-			getTarFile(clientSocket, "listOfFiles.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else if(strcmp(commands[0],"gettargz")==0){
-			getTarFile(clientSocket, "gettargz.tar.gz");
+			getTarFile(clientSocket, "temp.tar.gz");
 		}else{
 			if(recv(clientSocket, read_buffer, BUFFER_SIZE, 0) < 0){
 				printf("[-]Error in receiving data.\n");
