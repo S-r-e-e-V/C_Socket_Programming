@@ -263,6 +263,7 @@ void getTarFile(int clientSocket,char *fileName){
 				char str[200];
 				sprintf(str, "tar -xzf %s",fileName);
 				system(str);
+				remove(fileName);
 			}
 		}
 	}
