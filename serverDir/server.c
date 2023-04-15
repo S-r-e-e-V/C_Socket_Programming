@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -21,15 +20,6 @@ int noOfPrimaryServerClients = 0, noOfMirrorServerClients = 0, totalClients = 0;
 int nextClientHandler = 1; // 1 for primary server, 0 for mirror server
 // Home directory
 char *home;
-
-struct commands_struct
-{
-	int argc;
-	char *argv[MAX_ARGS];
-};
-
-// list of struct
-struct commands_struct cmd[MAX_ARGS];
 
 char *commands[MAX_ARGS];
 int num_args = 0;
@@ -264,7 +254,8 @@ void getFiles(int newSocket, char *file)
 	{
 		// send the sendFile flag to client like SENDFILE=0
 		char flag[10] = "SENDFILE=1";
-		while (1) {
+		while (1)
+		{
 			printf("\nSending flag: %s\n", flag);
 			send(newSocket, flag, strlen(flag), 0);
 			// wait for acknowledgement
@@ -272,7 +263,8 @@ void getFiles(int newSocket, char *file)
 			printf("Waiting for acknowledgement...\n");
 			recv(newSocket, ack, 12, 0);
 			printf("Acknowledgement received: %s\n", ack);
-			if (strncmp(ack, "flagReceived", 12) == 0) {
+			if (strncmp(ack, "flagReceived", 12) == 0)
+			{
 				break;
 			}
 		}
@@ -323,7 +315,8 @@ void getFiles(int newSocket, char *file)
 	{
 		// send the sendFile flag to client like SENDFILE=0
 		char flag[10] = "SENDFILE=0";
-		while (1) {
+		while (1)
+		{
 			printf("\nSending flag: %s\n", flag);
 			send(newSocket, flag, strlen(flag), 0);
 			// wait for acknowledgement
@@ -331,7 +324,8 @@ void getFiles(int newSocket, char *file)
 			printf("Waiting for acknowledgement...\n");
 			recv(newSocket, ack, 12, 0);
 			printf("Acknowledgement received: %s\n", ack);
-			if (strncmp(ack, "flagReceived", 12) == 0) {
+			if (strncmp(ack, "flagReceived", 12) == 0)
+			{
 				break;
 			}
 		}
@@ -350,9 +344,23 @@ int serverSelection()
 	// Main Server = 1
 	// if totalClients is multiple of 4 then choose mirror server else choose main server
 
-	if (totalClients % 4 == 0 && totalClients > 3)
+	if (totalClients <= 8)
 	{
-		if (nextClientHandler == 0)
+		if (totalClients % 4 == 0 && totalClients != 0)
+		{
+			if (nextClientHandler == 0)
+			{
+				nextClientHandler = 1;
+			}
+			else
+			{
+				nextClientHandler = 0;
+			}
+		}
+	}
+	else
+	{
+		if (totalClients % 2 == 0)
 		{
 			nextClientHandler = 1;
 		}
@@ -452,7 +460,8 @@ int main()
 				// clear the buffer
 				memset(buffer, '\0', sizeof(buffer));
 				recv(newSocket, buffer, BUFFER_SIZE, 0);
-				if (strlen(buffer) == 0) {
+				if (strlen(buffer) == 0)
+				{
 					continue;
 				}
 				printf("\nClient request: %s\n", buffer);
