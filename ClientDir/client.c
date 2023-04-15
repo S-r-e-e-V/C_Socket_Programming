@@ -206,11 +206,6 @@ void getTarFile(int clientSocket,char *fileName){
 	recv(clientSocket, &read_buffer_for_Flag, sizeof(read_buffer_for_Flag), 0);
 	char receivedFlag[10];
 	strncpy(receivedFlag, read_buffer_for_Flag, 10);
-	printf("Received the Flag!\n");
-	// wait for 1 second
-	sleep(1);
-	// send acknowledgement to server
-	send(clientSocket, "flagReceived", 12, 0);
 
 	char fileTypeFlag[10] = "SENDFILE=1";
 	char dataFlag[10] = "SENDFILE=0";
@@ -218,6 +213,12 @@ void getTarFile(int clientSocket,char *fileName){
 	// if dataFlag SENDFILE=0
 	if (strncmp(receivedFlag, dataFlag, 10)==0)
 	{
+		printf("Received the Data Flag!\n");
+		// wait for 1 second
+		sleep(1);
+		// send acknowledgement to server
+		send(clientSocket, "flagReceived", 12, 0);
+		
 		// read data from socket and print
 		recv(clientSocket, &read_buffer, sizeof(read_buffer), 0);
 		printf(">>%s\n",read_buffer);
@@ -225,6 +226,12 @@ void getTarFile(int clientSocket,char *fileName){
 	}
 	else if (strncmp(receivedFlag, fileTypeFlag, 10)==0)
 	{
+		printf("Received the File Flag!\n");
+		// wait for 1 second
+		sleep(1);
+		// send acknowledgement to server
+		send(clientSocket, "flagReceived", 12, 0);
+		
 		int fd = open(fileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 		if (fd == -1) {
 			printf("Error opening file...\n");
