@@ -22,15 +22,6 @@ int nextClientHandler = 1; // 1 for primary server, 0 for mirror server
 // Home directory
 char *home;
 
-struct commands_struct
-{
-	int argc;
-	char *argv[MAX_ARGS];
-};
-
-// list of struct
-struct commands_struct cmd[MAX_ARGS];
-
 char *commands[MAX_ARGS];
 int num_args = 0;
 
@@ -350,13 +341,23 @@ int serverSelection()
 	// Main Server = 1
 	// if totalClients is multiple of 4 then choose mirror server else choose main server
 
-	if (totalClients % 4 == 0 && totalClients > 3)
-	{
-		if (nextClientHandler == 0)
+	if(totalClients <= 8){
+		if (totalClients % 4 == 0 && totalClients!=0)
+		{
+			if (nextClientHandler == 0)
+			{
+				nextClientHandler = 1;
+			}
+			else
+			{
+				nextClientHandler = 0;
+			}
+		}
+	}else{
+		if(totalClients%2==0)
 		{
 			nextClientHandler = 1;
-		}
-		else
+		}else
 		{
 			nextClientHandler = 0;
 		}
