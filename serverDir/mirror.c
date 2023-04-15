@@ -21,15 +21,6 @@ int totalClients = 0;
 // Home directory
 char *home;
 
-struct commands_struct
-{
-	int argc;
-	char *argv[MAX_ARGS];
-};
-
-// list of struct
-struct commands_struct cmd[MAX_ARGS];
-
 char *commands[MAX_ARGS];
 int num_args = 0;
 
@@ -263,7 +254,8 @@ void getFiles(int newSocket, char *file)
 	{
 		// send the sendFile flag to client like SENDFILE=0
 		char flag[10] = "SENDFILE=1";
-		while (1) {
+		while (1)
+		{
 			printf("\nSending flag: %s\n", flag);
 			send(newSocket, flag, strlen(flag), 0);
 			// wait for acknowledgement
@@ -271,7 +263,8 @@ void getFiles(int newSocket, char *file)
 			printf("Waiting for acknowledgement...\n");
 			recv(newSocket, ack, 12, 0);
 			printf("Acknowledgement received: %s\n", ack);
-			if (strncmp(ack, "flagReceived", 12) == 0) {
+			if (strncmp(ack, "flagReceived", 12) == 0)
+			{
 				break;
 			}
 		}
@@ -322,7 +315,8 @@ void getFiles(int newSocket, char *file)
 	{
 		// send the sendFile flag to client like SENDFILE=0
 		char flag[10] = "SENDFILE=0";
-		while (1) {
+		while (1)
+		{
 			printf("\nSending flag: %s\n", flag);
 			send(newSocket, flag, strlen(flag), 0);
 			// wait for acknowledgement
@@ -330,7 +324,8 @@ void getFiles(int newSocket, char *file)
 			printf("Waiting for acknowledgement...\n");
 			recv(newSocket, ack, 12, 0);
 			printf("Acknowledgement received: %s\n", ack);
-			if (strncmp(ack, "flagReceived", 12) == 0) {
+			if (strncmp(ack, "flagReceived", 12) == 0)
+			{
 				break;
 			}
 		}
@@ -413,7 +408,8 @@ int main()
 				// clear the buffer
 				memset(buffer, '\0', sizeof(buffer));
 				recv(newSocket, buffer, BUFFER_SIZE, 0);
-				if (strlen(buffer) == 0) {
+				if (strlen(buffer) == 0)
+				{
 					continue;
 				}
 				printf("\nClient request: %s\n", buffer);

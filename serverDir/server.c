@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -85,7 +86,7 @@ int search_file(int newSocket, char *filename, char *path)
 			}
 
 			printf("Found file %s\n", path);
-			printf("Size: %jd bytes", (intmax_t)st.st_size);
+			printf("Size: %jd bytes\n", (intmax_t)st.st_size);
 			printf("Date created: %s", ctime(&st.st_ctime));
 
 			char *message = malloc(MAX_COMMAND_LENGTH * sizeof(char));
