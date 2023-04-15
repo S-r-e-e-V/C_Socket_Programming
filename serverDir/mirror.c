@@ -359,12 +359,13 @@ int main()
 		printf("[-]Error in connection.\n");
 		exit(1);
 	}
-	printf("[+]Server Socket is created.\n");
+	printf("[+]Mirror Socket is created.\n");
 
 	memset(&serverAddr, '\0', sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	// serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
 	{

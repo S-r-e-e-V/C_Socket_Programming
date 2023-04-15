@@ -85,11 +85,11 @@ int search_file(int newSocket, char *filename, char *path)
 			}
 
 			printf("Found file %s\n", path);
-			printf("Size: %jd bytes\n", (intmax_t)st.st_size);
+			printf("Size: %d bytes\n", (intmax_t)st.st_size);
 			printf("Date created: %s", ctime(&st.st_ctime));
 
 			char *message = malloc(MAX_COMMAND_LENGTH * sizeof(char));
-			sprintf(message, "File: %s\nSize: %jd bytes\nDate created: %s", path, (intmax_t)st.st_size, ctime(&st.st_ctime));
+			sprintf(message, "File: %s\nSize: %d bytes\nDate created: %s", path, (intmax_t)st.st_size, ctime(&st.st_ctime));
 
 			send(newSocket, message, strlen(message), 0);
 
@@ -398,7 +398,8 @@ int main()
 	memset(&serverAddr, '\0', sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	// serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
 
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
 	{
