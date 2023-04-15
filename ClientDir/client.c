@@ -256,7 +256,7 @@ void getTarFile(int clientSocket,char *fileName){
 					break;
 				}
 				if (bytes_written < bytes_read) {
-					printf("Error writing data to file...\n");
+					perror("Error writing data to file...\n");
 					break;
 				}
 				total_bytes_read =total_bytes_read+ bytes_read;
@@ -276,7 +276,15 @@ void getTarFile(int clientSocket,char *fileName){
 	}
 }
 
-int main(){
+int main(int argc, char* argv[]){
+
+	if (argc != 3 && argc != 1) {
+		printf("Usage: %s <Server IP> <Mirror IP>\n", argv[0]);
+		exit(1);
+	}else if(argc==3){
+		PRIMARY_SERVER_IP=argv[1];
+		MIRROR_SERVER_IP=argv[2];
+	}
 
 	int clientSocket, ret;
 	struct sockaddr_in primaryServerAddr;
